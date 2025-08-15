@@ -199,28 +199,56 @@
     <section class="container forms" id="draggable">
         <div class="form login">
             <div class="form-content">
-                <form method="POST" action="{{ route('login') }}">
-                    @csrf
-
+                <form method="POST" action="<?php echo e(route('login')); ?>">
+                    <?php echo csrf_field(); ?>
+                    <div class="app-title">AFMS</div>
                     <header>Login</header>
                     <div class="field input-field">
-                        <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email"
-                            value="{{ old('email') }}" required autocomplete="email" autofocus placeholder="Email">
-                        @error('email')
+                        <input id="email" type="email" class="form-control <?php $__errorArgs = ['email'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" name="email"
+                            value="<?php echo e(old('email')); ?>" required autocomplete="email" autofocus placeholder="Email">
+                        <?php $__errorArgs = ['email'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                             <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
+                                <strong><?php echo e($message); ?></strong>
                             </span>
-                        @enderror
+                        <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                     </div>
 
                     <div class="field input-field">
-                        <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required
+                        <input id="password" type="password" class="form-control <?php $__errorArgs = ['password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" name="password" required
                             autocomplete="current-password" placeholder="Password">
-                        @error('password')
+                        <?php $__errorArgs = ['password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                             <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
+                                <strong><?php echo e($message); ?></strong>
                             </span>
-                        @enderror
+                        <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                         <i class='bx bx-hide eye-icon' id="togglePassword"></i>
                     </div>
 
@@ -232,8 +260,8 @@
 
             <div class="line"></div>
             <div class="media-options">
-                <a href="{{ route('redirect') }}" class="field google">
-                    <img src="{{ asset('admin/assets/img/google.png') }}" alt="" class="google-img">
+                <a href="<?php echo e(route('redirect')); ?>" class="field google">
+                    <img src="<?php echo e(asset('admin/assets/img/google.png')); ?>" alt="" class="google-img">
                     <span>Login with Google</span>
                 </a>
             </div>
@@ -309,3 +337,4 @@
 </body>
 
 </html>
+<?php /**PATH C:\laragon\www\dashboard-fingerprint\resources\views/auth/login.blade.php ENDPATH**/ ?>
