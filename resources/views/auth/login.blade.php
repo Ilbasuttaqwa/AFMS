@@ -26,24 +26,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             position: relative;
-        }
-
-        .video-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            overflow: hidden;
-        }
-
-        .video-bg video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
         }
 
         .container {
@@ -60,6 +44,16 @@
 
         .container:active {
             cursor: grabbing;
+        }
+
+        .app-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #0171d3;
+            text-align: center;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
         }
 
         header {
@@ -202,16 +196,12 @@
 </head>
 
 <body>
-    <div class="video-bg">
-        <video src="/videos/grow.mp4" autoplay muted loop style="background-color: gray;"></video>
-    </div>
-
     <section class="container forms" id="draggable">
         <div class="form login">
             <div class="form-content">
                 <form method="POST" action="{{ route('login') }}">
                     @csrf
-                    <img src={{ asset('admin/assets/img/logo/logo.png') }} alt="Logo" class="app-brand-logo" style="max-width: 100%; height: auto;">
+                    <div class="app-title">AFMS</div>
                     <header>Login</header>
                     <div class="field input-field">
                         <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email"

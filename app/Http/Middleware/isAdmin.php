@@ -16,11 +16,13 @@ class isAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::user()->is_admin === 1) {
+        $user = Auth::user();
+        
+        // Check if user has manager or admin role (admin access)
+        if ($user->role === 'manager' || $user->role === 'admin') {
             return $next($request);
         } else {
-
-            return abort(403);
+            return abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk mengakses halaman ini.');
         }
     }
 }

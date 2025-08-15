@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Absensi;
+use Carbon\Carbon;
 
 class HomeController extends Controller
 {
@@ -26,11 +28,13 @@ class HomeController extends Controller
         $pegawai = User::all();
 
         $totalPegawai = User::count('id');
-        $totalPenggajian = User::sum('gaji');
-        // $fasilitas = Fasilitas::count('id');
-        // $artikel = Artikel::count('id');
-        // $pendaftaran = Pendaftaran::count('id');
+        
+        // Hitung jumlah karyawan yang terlambat hari ini
+        $terlambatHariIni = Absensi::whereDate('tanggal_absen', Carbon::today())
+            ->where('jam_masuk', '>', '08:00:00')
+            ->distinct('id_user')
+            ->count();
 
-        return view('home', compact('pegawai', 'totalPegawai', 'totalPenggajian'));
+        return view('home', compact('pegawai', 'totalPegawai', 'terlambatHariIni'));
     }
 }

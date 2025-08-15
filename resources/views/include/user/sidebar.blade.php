@@ -40,9 +40,8 @@
     <div class="sidenav-header">
         <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none"
             aria-hidden="true" id="iconSidenav"></i>
-        <a class="navbar-brand m-0" href="#" target="_blank">
-            <img src={{ asset('admin/assets/img/logo/logo.png') }} alt="Logo" class="app-brand-logo"
-                style="max-width: 100%; height: auto;">
+        <a class="navbar-brand m-0" href="{{ route('user.dashboard') }}">
+            <span class="ms-1 font-weight-bold text-primary" style="font-size: 1.2rem;">AFMS</span>
         </a>
     </div>
     <hr class="horizontal dark mt-0">
@@ -60,82 +59,57 @@
             </li>
 
             <li class="nav-item mt-3">
-                <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Table</h6>
-            </li>
-
-            <!-- Absensi Menu -->
-            <li class="nav-item {{ request()->is('user/absensi') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ url('user/absensi') }}">
-                    <div
-                        class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="ni ni-calendar-grid-58 text-warning text-sm opacity-10"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">Absensi</span>
-                </a>
-            </li>
-
-            <!-- New Izin Sakit Menu Item -->
-            {{-- <li class="nav-item {{ request()->routeIs('izin.sakit') ? 'active' : '' }}">
-                <a href="{{ route('izin.sakit') }}" class="menu-link">
-                    <i class="menu-icon tf-icons bx bx-plus-medical"></i>
-                    <div data-i18n="Izin Sakit">Izin Sakit</div>
-
-                    <!-- Notification Badge for Pending Sakit Permits -->
-                    <span class="badge badge-center rounded-pill bg-danger ms-2">
-                        {{ $izin_sakit_count ?? 0 }}
-                    </span>
-                </a>
-            </li> --}}
-            <li class="nav-item {{ request()->routeIs('izin.sakit') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('izin.sakit') }}">
-                    <div
-                        class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="bx bx-plus-medical text-success text-sm opacity-10"></i>
-                    </div>
-                    <!-- Notification Badge for Pending Sakit Permits -->
-                    <span class="nav-link-text ms-1">Izin sakit</span>
-                    <span class="badge badge-center rounded-pill bg-danger ms-2">
-                        {{ $izinSakitCount ?? 0 }}
-                    </span>
-                </a>
+                <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Data</h6>
             </li>
 
 
-            <!-- Billing Menu -->
-            <li class="nav-item {{ request()->is('user/penggajian') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ url('user/penggajian') }}">
+
+            <!-- Kalender Absensi Menu -->
+            <li class="nav-item {{ request()->is('absensi-kalender') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('welcome.calendar') }}">
                     <div
                         class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="ni ni-credit-card text-success text-sm opacity-10"></i>
+                        <i class="ni ni-calendar-grid-58 text-info text-sm opacity-10"></i>
                     </div>
-                    <span class="nav-link-text ms-1">Penggajian</span>
+                    <span class="nav-link-text ms-1">Kalender Absensi</span>
                 </a>
             </li>
 
-            <!-- Cuti Menu -->
-            <li class="nav-item {{ request()->is('user/cuti') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ url('user/cuti') }}">
+            <!-- Bon Menu -->
+            <li class="nav-item {{ request()->is('user/bon*') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('user.bon.index') }}">
                     <div
                         class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="ni ni-calendar-grid-58 text-danger text-sm opacity-10"></i>
+                        <i class="ni ni-money-coins text-success text-sm opacity-10"></i>
                     </div>
-                    <span class="nav-link-text ms-1">Cuti</span>
+                    <span class="nav-link-text ms-1">Bon</span>
+                </a>
+            </li>
+
+            <!-- Sakit/Izin Menu -->
+            <li class="nav-item {{ request()->is('user/sakit-izin*') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('user.sakit-izin.index') }}">
+                    <div
+                        class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="ni ni-ambulance text-danger text-sm opacity-10"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Sakit/Izin</span>
+                </a>
+            </li>
+
+            <!-- Data Karyawan Menu -->
+            <li class="nav-item {{ request()->is('user/karyawan*') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('user.karyawan.index') }}">
+                    <div
+                        class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="ni ni-circle-08 text-info text-sm opacity-10"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Data Karyawan</span>
                 </a>
             </li>
 
             <li class="nav-item mt-3">
                 <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Account</h6>
-            </li>
-
-            <!-- Profile Menu -->
-            <li class="nav-item {{ request()->is('user/profile') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ url('user/profile') }}">
-                    <div
-                        class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="ni ni-single-02 text-dark text-sm opacity-10"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">Profile</span>
-                </a>
             </li>
 
             <!-- Logout Menu -->
@@ -154,6 +128,6 @@
 
     <!-- Hidden Logout Form -->
     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-        @csrf
+       @csrf
     </form>
 </aside>

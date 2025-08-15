@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\CutiExport;
+
 use App\Exports\PegawaiExport;
 use App\Models\Absensi;
-use App\Models\Cutis;
+
 use App\Models\Jabatan;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -31,7 +31,7 @@ class LaporanController extends Controller
     //     $jabatanId = $request->input('jabatan');
 
     //     if (!$tanggalAwal || !$tanggalAkhir) {
-    //         $pegawai = User::where('is_admin', 0)->get()->map(function ($pegawai) {
+    //         $pegawai = User::where('role', '!=', 'manager')->get()->map(function ($pegawai) {
     //             $pegawai->umur = floor(Carbon::parse($pegawai->tanggal_lahir)->diffInYears(Carbon::now()));
     //             return $pegawai;
     //         });
@@ -69,7 +69,7 @@ class LaporanController extends Controller
         $jabatanId = $request->input('jabatan');
 
         if (!$tanggalAwal || !$tanggalAkhir) {
-            $pegawai = User::where('is_admin', 0)
+            $pegawai = User::where('role', '!=', 'manager')
                 ->when($jabatanId, function ($query) use ($jabatanId) {
                     return $query->where('id_jabatan', $jabatanId);
                 })
@@ -111,77 +111,51 @@ class LaporanController extends Controller
     // LAPORAN BUAT ABSENSI DAN FILTER
     public function absensi(Request $request)
     {
-        // $pegawai = User::all();
-        // $jabatan = Jabatan::all();
-        // $absensi = Absensi::all();
-        // return view('admin.laporan.absensi', compact('pegawai', 'jabatan', 'absensi'));
-
-        $tanggalAwal = $request->input('tanggal_awal');
-        $tanggalAkhir = $request->input('tanggal_akhir');
-
-        // Ambil data absensi berdasarkan filter tanggal
-        $absensi = Absensi::with('user')
-            ->when($tanggalAwal && $tanggalAkhir, function ($query) use ($tanggalAwal, $tanggalAkhir) {
-                return $query->whereBetween('tanggal_absen', [$tanggalAwal, $tanggalAkhir]);
-            })
-            ->get()
-            ->map(function ($item) {
-                if ($item->status == 'sakit') {
-                    $item->note = 'Sakit';
-                } else {
-                    $item->note = $item->note ?? '-';
-                }
-                return $item;
+        $year = $request->input('year', date('Y'));
+        $month = $request->input('month', date('m'));
+        $cabangId = $request->input('cabang');
+        
+        // Create date range for the selected month and year
+        $startDate = "$year-$month-01";
+        $endDate = date('Y-m-t', strtotime($startDate));
+        
+        // Query to get attendance data with user relationship
+        $query = Absensi::with(['user.cabang', 'user.jabatan'])
+            ->whereBetween('tanggal_absen', [$startDate, $endDate]);
+            
+        // Filter by branch/location if selected
+        if ($cabangId) {
+            $query->whereHas('user', function($q) use ($cabangId) {
+                $q->where('id_cabang', $cabangId);
             });
-
-        return view('admin.laporan.absensi', compact('absensi'));
+        }
+        
+        $absensi = $query->get();
+        
+        // Get all branches for the filter dropdown
+        $cabang = \App\Models\Cabang::all();
+        
+        // Generate PDF if requested
+        if ($request->has('pdf')) {
+            $pdf = PDF::loadView('admin.laporan.pdf_absensi', compact('absensi'))->setPaper('a4', 'landscape');
+            return $pdf->stream('laporan_absensi.pdf');
+        }
+        
+        // Download PDF if requested
+        if ($request->has('download_pdf')) {
+            $pdf = PDF::loadView('admin.laporan.pdf_absensi', compact('absensi'))->setPaper('a4', 'landscape');
+            return $pdf->download('laporan_absensi.pdf');
+        }
+        
+        // Download Excel if requested
+        if ($request->has('download_excel')) {
+            return Excel::download(new \App\Exports\AbsensiExport($absensi), 'laporan_absensi.xlsx');
+        }
+        
+        return view('admin.laporan.absensi', compact('absensi', 'cabang', 'year', 'month', 'cabangId'));
     }
 
-    //LAPORAN BUAT CUTI DAN FILTER
-    public function cuti(Request $request)
-{
-    $jabatan = Jabatan::all();
-    $tanggalAwal = $request->input('tanggal_awal');
-    $tanggalAkhir = $request->input('tanggal_akhir');
-    $jabatanId = $request->input('jabatan');
 
-    if (!$tanggalAwal || !$tanggalAkhir) {
-        $cuti = Cutis::with(['pegawai.jabatan'])
-            ->where('status_cuti', 1) // Tambahkan kondisi untuk status
-            ->get();
-    } else {
-        $cuti = Cutis::with(['pegawai.jabatan'])
-            ->where('status_cuti', 1) // Tambahkan kondisi untuk status
-            ->whereBetween('tanggal_mulai', [$tanggalAwal, $tanggalAkhir])
-            ->get();
-    }
-
-    /// Export ke Excel
-    if ($request->has('download_excel')) {
-        return Excel::download(new CutiExport( $tanggalAwal, $tanggalAkhir), 'laporan_cuti.xlsx');
-    }
-
-    // Hitung total hari cuti untuk setiap record cuti
-    foreach ($cuti as $item) {
-        $tanggalMulai = \Carbon\Carbon::parse($item->tanggal_mulai);
-        $tanggalAkhir = \Carbon\Carbon::parse($item->tanggal_selesai);
-        $item->total_hari_cuti = $tanggalMulai->diffInDays($tanggalAkhir) + 1; // +1 agar tanggal mulai juga terhitung
-    }
-
-    // tampil pdf
-    if ($request->has('view_pdf')) {
-        $pdf = PDF::loadView('admin.laporan.pdf_cuti', compact('cuti'))->setPaper('a4', 'landscape');
-        return $pdf->stream('laporan_cuti.pdf'); // untuk menampilkan PDF
-    }
-
-    // download pdf
-    if ($request->has('download_pdf')) {
-        $pdf = PDF::loadView('admin.laporan.pdf_cuti', compact('cuti'))->setPaper('a4', 'landscape');
-        return $pdf->download('laporan_cuti.pdf'); // untuk mendownload PDF
-    }
-
-    return view('admin.laporan.cuti', compact('cuti', 'jabatan'));
-}
 
     
 }

@@ -63,9 +63,8 @@ class RegisterController extends Controller
             'gaji' => $data['gaji'],
             'status_pegawai' => 0,
             'id_jabatan' => $data['id_jabatan'],
-            'is_admin' => 0,
+            'role' => 'admin',
             'google_id' => null,
-            'is_admin' => 0,
             'password' => Hash::make($data['password']),
         ]);
     }

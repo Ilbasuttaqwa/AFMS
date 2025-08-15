@@ -5,7 +5,9 @@
 @endsection
 @section('content')
     <div class="container-xxl flex-grow-1 container-p-y">
-        <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Management Karyawan /</span> Jabatan</h4>
+        <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light"></span>Seluruh Golongan</h4>
+
+
 
         {{-- UNTUK TOAST NOTIFIKASI --}}
         <div class="toast-container position-fixed top-0 end-0 p-3">
@@ -90,37 +92,21 @@
 
 
         <div class="row">
-            <div class="col-4">
+            <div class="col-12">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="fw-bold py-3">Tambah Jabatan</h5>
-                        <form action="{{ route('jabatan.store') }}" method="POST">
-                            @csrf
-                            <div class="mb-3">
-                                <label for="nama_jabatan" class="form-label">Nama Jabatan</label>
-                                <input type="text" class="form-control" name="nama_jabatan" placeholder="Enter jabatan"
-                                    required>
-                            </div>
-
-                            <!-- Container untuk Field Tambahan -->
-                            <div id="additionalFields"></div>
-
-                            <button type="button" class="btn btn-secondary" onclick="addField()">Tambah Field</button>
-                            <button type="submit" class="btn btn-primary">Simpan Data</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            <div class="col-8">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="fw-bold py-3">Tabel Jabatan</h5>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold py-3 mb-0">Tabel Golongan</h5>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tambahGolonganModal">
+                                <i class="bi bi-plus-circle me-1"></i> Tambah Golongan
+                            </button>
+                        </div>
                         <div class="table-responsive text-nowrap">
                             <table class="table table-hover" id="example">
                                 <thead>
                                     <tr>
                                         <th>No</th>
-                                        <th>Nama Jabatan</th>
+                                        <th>Nama Golongan</th>
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
@@ -133,13 +119,20 @@
                                                 <form action="{{ route('jabatan.destroy', $data->id) }}" method="POST">
                                                     @csrf
                                                     @method('DELETE')
+                                                    <a href="{{ route('jabatan.detail', $data->id) }}" class="btn rounded-pill btn-info"
+                                                        style="padding-left: 20px; padding-right: 20px; padding-top: 7px; padding-bottom: 7px">
+                                                        <i class="bi bi-eye" data-bs-toggle="tooltip"
+                                                            data-bs-offset="0,4" data-bs-placement="top"
+                                                            data-bs-html="true" title="Lihat Detail"></i>
+                                                    </a>
+
                                                     <a href="javascript:void(0)" class="btn rounded-pill btn-primary"
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#editModal{{ $data->id }}"
                                                         style="padding-left: 20px; padding-right: 20px; padding-top: 7px; padding-bottom: 7px">
                                                         <i class="bi bi-pencil-square" data-bs-toggle="tooltip"
                                                             data-bs-offset="0,4" data-bs-placement="left"
-                                                            data-bs-html="true" title="Edit Jabatan"></i>
+                                                            data-bs-html="true" title="Edit Golongan"></i>
 
                                                     </a>
 
@@ -148,7 +141,7 @@
                                                         style="padding-left: 20px; padding-right: 20px; padding-top: 7px; padding-bottom: 7px">
                                                         <i class="bi bi-trash-fill" data-bs-toggle="tooltip"
                                                             data-bs-offset="0,4" data-bs-placement="right"
-                                                            data-bs-html="true" title="Delete Jabatan"></i>
+                                                            data-bs-html="true" title="Delete Golongan"></i>
 
                                                     </a>
                                                 </form>
@@ -161,7 +154,7 @@
                                             <div class="modal-dialog modal-md modal-dialog-centered">
                                                 <div class="modal-content">
                                                     <div class="modal-header">
-                                                        <h5 class="modal-title">Edit Jabatan</h5>
+                                                        <h5 class="modal-title">Edit Golongan</h5>
                                                         <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                             aria-label="Close"></button>
                                                     </div>
@@ -172,7 +165,7 @@
                                                         <div class="modal-body">
                                                             <div class="mb-3">
                                                                 <label for="nama_jabatan" class="form-label">Nama
-                                                                    Jabatan</label>
+                                                                    Golongan</label>
                                                                 <input type="text" class="form-control"
                                                                     name="nama_jabatan" value="{{ $data->nama_jabatan }}"
                                                                     required>
@@ -181,8 +174,9 @@
                                                         <div class="modal-footer">
                                                             <button type="button" class="btn btn-secondary"
                                                                 data-bs-dismiss="modal">Close</button>
-                                                            <button type="submit" class="btn btn-primary">Save
-                                                                changes</button>
+                                                            <button type="submit" class="btn btn-primary">
+                                                                <i class="bi bi-check-circle me-1"></i> Update Golongan
+                                                            </button>
                                                         </div>
                                                     </form>
                                                 </div>
@@ -197,52 +191,77 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal Tambah Golongan -->
+    <div class="modal fade" id="tambahGolonganModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Tambah Golongan</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ route('jabatan.store') }}" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="text-center mb-4">
+                            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <i class="bi bi-briefcase fs-3 text-primary"></i>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="nama_jabatan" class="form-label fw-bold text-dark">
+                                <i class="bi bi-tag me-1"></i>Nama Golongan
+                            </label>
+                            <input type="text" class="form-control" name="nama_jabatan" placeholder="Masukkan nama golongan" required>
+                        </div>
+
+                        <div class="alert alert-info border-0">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Info:</strong> Golongan akan digunakan untuk mengkategorikan karyawan berdasarkan jabatan mereka.
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-1"></i>Batal
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"></i>Simpan Golongan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
 @push('scripts')
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
     <script src="https://cdn.datatables.net/2.1.8/js/dataTables.bootstrap5.js"></script>
     <script>
-        let fieldCount = 0;
-        // Fungsi untuk menambahkan field baru
-        function addField() {
-            fieldCount++;
-
-            const additionalFields = document.getElementById('additionalFields');
-
-            const fieldContainer = document.createElement('div');
-            fieldContainer.setAttribute('id', `fieldContainer-${fieldCount}`);
-            fieldContainer.className = 'd-flex align-items-center mb-3';
-
-            const inputField = document.createElement('input');
-            inputField.type = 'text';
-            inputField.name = `additional_fields[]`; // Gunakan array untuk multiple inputs
-            inputField.className = 'form-control me-2';
-            inputField.placeholder = `Enter Jabatan ${fieldCount}`;
-            inputField.required = true;
-
-            const deleteButton = document.createElement('button');
-            deleteButton.type = 'button';
-            deleteButton.className = 'btn btn-danger';
-            deleteButton.innerHTML = '<i class="bi bi-trash"></i>'; // Icon Sampah
-            deleteButton.onclick = function () {
-                removeField(fieldCount);
-            };
-
-            fieldContainer.appendChild(inputField);
-            fieldContainer.appendChild(deleteButton);
-            additionalFields.appendChild(fieldContainer);
-        }
-
-        // Fungsi untuk menghapus field tertentu
-        function removeField(id) {
-            const fieldContainer = document.getElementById(`fieldContainer-${id}`);
-            if (fieldContainer) {
-                fieldContainer.remove();
-            }
-        }
+        // Script untuk tooltip Bootstrap
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
     </script>
     <script>
-        new DataTable('#example')
+        new DataTable('#example', {
+            language: {
+                search: "Cari:",
+                lengthMenu: "Tampilkan _MENU_ data per halaman",
+                info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                infoEmpty: "Menampilkan 0 sampai 0 dari 0 data",
+                infoFiltered: "(difilter dari _MAX_ total data)",
+                zeroRecords: "Tidak ada data yang ditemukan",
+                emptyTable: "Tidak ada data tersedia",
+                paginate: {
+                    first: "Pertama",
+                    last: "Terakhir",
+                    next: "Selanjutnya",
+                    previous: "Sebelumnya"
+                }
+            }
+        })
     </script>
 @endpush

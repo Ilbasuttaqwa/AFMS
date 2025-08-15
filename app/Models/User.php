@@ -30,8 +30,10 @@ class User extends Authenticatable
         'email',
         'email_verified_at',
         'password',
-        'is_admin',
+        'role',
         'id_jabatan',
+        'id_cabang',
+        'device_user_id',
         'provinsi',
         'kota',
         'kabupaten',
@@ -75,12 +77,54 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Jabatan::class, 'id_jabatan');
     }
-    public function cuti()
+    
+    public function cabang()
     {
-        return $this->hasMany(Cutis::class, 'id_user');
+        return $this->belongsTo(Cabang::class, 'id_cabang');
     }
+    
+
+    
     public function berkas()
     {
         return $this->hasMany(Berkas::class, 'id_user');
+    }
+    
+    public function bonusGaji()
+    {
+        return $this->hasMany(BonusGaji::class, 'id_user');
+    }
+    
+    public function potonganGaji()
+    {
+        return $this->hasMany(PotonganGaji::class, 'id_user');
+    }
+    
+    public function fingerprintAttendance()
+    {
+        return $this->hasMany(FingerprintAttendance::class, 'user_id');
+    }
+    
+    // Role helper methods
+    public function isManager()
+    {
+        return $this->role === 'manager';
+    }
+    
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+    
+    // Backward compatibility
+    public function getIsAdminAttribute()
+    {
+        return $this->role === 'manager';
+    }
+    
+    // Name accessor for compatibility
+    public function getNameAttribute()
+    {
+        return $this->nama_pegawai;
     }
 }

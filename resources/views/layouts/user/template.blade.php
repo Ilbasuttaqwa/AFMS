@@ -15,7 +15,8 @@
     <link href="{{ asset('user/assets/css/nucleo-icons.css') }}" rel="stylesheet" />
     <link href="{{ asset('user/assets/css/nucleo-svg.css') }}" rel="stylesheet" />
     <!-- Font Awesome Icons -->
-    <script src="https://kit.fontawesome.com/42d5adcbca.js')}}" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
+    <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
     <link href="{{ asset('user/assets/css/nucleo-svg.css') }}" rel="stylesheet" />
     <!-- CSS Files -->
     <link id="pagestyle" href="{{ asset('user/assets/css/argon-dashboard.css?v=2.0.4') }}" rel="stylesheet" />
@@ -26,34 +27,13 @@
     <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 
-    <style>
-        .bg-primary {
-            background-color: #0d6efd !important;
-        }
-
-        .text-white {
-            color: #ffffff !important;
-        }
-        .dark-mode {
-            background-color: #1a202c;
-            color: #ffffff;
-        }
-
-        .dark-mode .card {
-            background-color: #2d3748;
-            color: #ffffff;
-        }
-
-        .dark-mode .navbar {
-            background-color: #2d3748;
-        }
-    </style>
+    <!-- User Theme CSS -->
+    <link href="{{ asset('assets/css/user-theme.css') }}" rel="stylesheet" />
 
 
 </head>
 
 <body class="g-sidenav-show   bg-gray-100">
-    <div class="min-height-300 bg-primary position-absolute w-100"></div>
 
     {{-- awal sidebar --}}
     @include('include.user.sidebar')
@@ -129,6 +109,7 @@
     </div>
     </div>
     <!--   Core JS Files   -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="{{ asset('user/assets/js/core/popper.min.js') }}"></script>
     <script src="{{ asset('user/assets/js/core/bootstrap.min.js') }}"></script>
     <script src="{{ asset('user/assets/js/plugins/perfect-scrollbar.min.js') }}"></script>

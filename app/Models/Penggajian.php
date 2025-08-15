@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Penggajian extends Model
 {
     use HasFactory;
-    protected $fillable = ['id', 'id_user', 'tanggal_gaji', 'jumlah_gaji', 'bonus', 'potongan'];
+    protected $fillable = ['id', 'id_user', 'tanggal_gaji', 'jumlah_gaji', 'bonus', 'potongan', 'keterangan'];
     public $timestamp = true;
 
     public function pegawai()

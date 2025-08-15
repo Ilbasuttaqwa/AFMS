@@ -7,13 +7,13 @@
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
-    <title>GrowTalenta</title>
+    <title>AFMS</title>
 
     <meta name="description" content="" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon"
-        href="https://iili.io/2rOi5VR.th.png"
+        href="https://iili.io/"
         class="rounded-circle" />
 
     <!-- Fonts -->
@@ -88,24 +88,20 @@
 
                     <div class="container-xxl flex-grow-1 container-p-y">
                         <div class="row">
-                            <div class="col-lg-8 mb-4 order-0">
+                            <div class="col-lg-12 mb-4 order-0">
                                 <div class="card">
-                                    <div class="d-flex align-items-end row">
+                                    <div class="d-flex align-items-center row">
                                         <div class="col-sm-7">
                                             <div class="card-body">
-                                                <h5 class="card-title text-primary">Welcome Back
-                                                    <b>{{ Auth::user()->nama_pegawai }}</b> 🎉
-                                                </h5>
+                                                <h5 class="card-title text-primary">Welcome Back Admin 🎉</h5>
                                                 <p class="mb-4">
-                                                    Ini Adalah Halaman Utama <span class="fw-bold">Grow Talenta Management System.</span>
+                                                    Ini Adalah Halaman Utama <span class="fw-bold">AFMS.</span>
                                                     <br>
                                                     Silahkan Cek Menu Menu Disini Untuk Melihat Informasi Yang Tersedia.
                                                 </p>
                                             </div>
                                         </div>
-                                        <div
-                                            class="col-sm-5
-                                                        text-center text-sm-left">
+                                        <div class="col-sm-5 text-center text-sm-left">
                                             <div class="card-body pb-0 px-0 px-md-4">
                                                 <img src="assets/img/illustrations/man-with-laptop-light.png"
                                                     height="140" alt="View Badge User"
@@ -116,55 +112,10 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- <div class="col-lg-4 col-md-4 order-1">
-                                <div class="row">
-                                    <div class="col-lg-6 col-md-12 col-6 mb-4">
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <div
-                                                    class="card-title d-flex align-items-start justify-content-between">
-                                                    <div class="avatar flex-shrink-0">
-                                                        <small class="text-warning fw-semibold">
-                                                            <i class='bx bxs-user-circle' style="font-size: 50px"></i>
-                                                        </small>
-                                                    </div>
-                                                </div>
-                                                <span>Pegawai</span>
-                                                <div class="row pt-2">
-                                                    <div class="col">
-                                                        <h3 class="card-title text-nowrap">
-                                                            {{ $totalPegawai }}
-                                                        </h3>
-                                                    </div>
-                                                    <div class="col"><a href="{{ route('pegawai.index') }}"
-                                                            class="btn btn-primary btn-sm">Lihat</a></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6 col-md-12 col-6 mb-4">
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <div
-                                                    class="card-title d-flex align-items-start justify-content-between">
-                                                    <div class="avatar flex-shrink-0">
-                                                        <small class="text-primary fw-semibold">
-                                                            <i class='bx bxs-wallet' style="font-size: 50px"></i>
-                                                        </small>
-                                                    </div>
-                                                </div>
-                                                <span>Gaji Keseluruhan</span>
-                                                <h3 class="card-title text-nowrap mb-1 mt-3">
-                                                    {{ $totalPenggajian }}
-                                                </h3>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div> -->
+
                         </div>
 
-                        <!-- Di bawah ini adalah konten untuk pegawai dan gaji -->
+                        <!-- Di bawah ini adalah konten untuk pegawai dan keterlambatan -->
                         <div class="row">
                             <div class="col-lg-6 col-md-6 col-6 mb-4">
                                 <div class="card">
@@ -197,14 +148,14 @@
                                     <div class="card-body">
                                         <div class="card-title d-flex align-items-start justify-content-between">
                                             <div class="avatar flex-shrink-0">
-                                                <small class="text-primary fw-semibold">
-                                                    <i class='bx bxs-wallet' style="font-size: 50px"></i>
+                                                <small class="text-danger fw-semibold">
+                                                    <i class='bx bxs-time' style="font-size: 50px"></i>
                                                 </small>
                                             </div>
                                         </div>
-                                        <span>Gaji Keseluruhan</span>
+                                        <span>Hari Ini Yang Terlambat</span>
                                         <h3 class="card-title text-nowrap mb-1 mt-3">
-                                            Rp. {{ number_format($totalPenggajian, 0, ',', '.') }}
+                                            {{ $terlambatHariIni }} Orang
                                         </h3>
                                     </div>
                                 </div>

@@ -1,27 +1,169 @@
 @extends('layouts.admin.template')
 @section('css')
     <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.bootstrap5.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .stats-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .stats-card .card-body {
+            padding: 1.5rem;
+        }
+        
+        .stats-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stats-icon.primary {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .stats-icon.success {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+        }
+        
+        .stats-icon.warning {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+        
+        .stats-icon.info {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+        }
+        
+        .employee-name {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1rem;
+        }
+        
+        .employee-email {
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+        
+        .badge-custom {
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+        
+        .badge-lokasi {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .badge-golongan {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+        }
+        
+        .badge-salary {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+            font-weight: 600;
+        }
+        
+        .bg-pink {
+            background-color: #e91e63 !important;
+            color: white !important;
+        }
+        
+        .avatar {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .avatar-sm {
+            width: 2rem;
+            height: 2rem;
+        }
+        
+        .avatar-initial {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+        
+        .bg-label-primary {
+            background-color: rgba(105, 108, 255, 0.16) !important;
+            color: #696cff !important;
+        }
+        
+        .text-truncate {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* Filter Form Styling */
+        .filter-form {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .filter-form .form-control,
+        .filter-form .form-select {
+            border: 1px solid #ced4da;
+            font-size: 0.875rem;
+        }
+        
+        .filter-form .input-group-text {
+            border: 1px solid #ced4da;
+            background-color: #f8f9fa;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .d-flex.gap-3 {
+                flex-direction: column;
+                gap: 1rem !important;
+            }
+            
+            .filter-form {
+                flex-direction: column;
+                gap: 0.5rem !important;
+            }
+            
+            .filter-form .input-group,
+            .filter-form .form-select {
+                width: 100% !important;
+            }
+        }
+
+    </style>
 @endsection
+
 @section('content')
     <div class="container-xxl flex-grow-1 container-p-y">
-        <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Management Karyawan /</span> Pegawai</h4>
+        <h4 class="fw-bold py-3 mb-4">
+            Data Karyawan
+        </h4>
 
-        {{-- UNTUK TOAST NOTIFIKASI --}}
-        <div class="toast-container position-fixed top-0 end-0 p-3">
-            <div id="validationToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="toast-header">
-                    <i class="bi bi-cloud-arrow-up-fill me-2"></i>
-                    <div class="me-auto fw-semibold">Success</div>
-                    <small>Just Now</small>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-                <div class="toast-body">
-                    Data sudah ada!
-                </div>
-            </div>
-        </div>
-
-        <!-- Toast Untuk Success -->
+        {{-- Toast Notifications --}}
         @if (session('success'))
             <div class="bs-toast toast toast-placement-ex m-2 bg-success top-0 end-0 fade show toast-custom" role="alert"
                 aria-live="assertive" aria-atomic="true" id="toastSuccess">
@@ -31,13 +173,10 @@
                     <small>Just Now</small>
                     <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
                 </div>
-                <div class="toast-body">
-                    {{ session('success') }}
-                </div>
+                <div class="toast-body">{{ session('success') }}</div>
             </div>
         @endif
 
-        {{-- Toast Untuk Error --}}
         @if (session('error'))
             <div class="bs-toast toast toast-placement-ex m-2 bg-danger top-0 end-0 fade show toast-custom" role="alert"
                 aria-live="assertive" aria-atomic="true" id="toastError">
@@ -47,185 +186,388 @@
                     <small>Just Now</small>
                     <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
                 </div>
-                <div class="toast-body">
-                    {{ session('error') }}
-                </div>
+                <div class="toast-body">{{ session('error') }}</div>
             </div>
         @endif
 
 
-        {{-- Toast Untuk Danger --}}
-        @if (session('danger'))
-            <div class="bs-toast toast toast-placement-ex m-2 bg-danger top-0 end-0 fade show toast-custom" role="alert"
-                aria-live="assertive" aria-atomic="true" id="toastError">
-                <div class="toast-header">
-                    <i class="bx bx-error me-2"></i>
-                    <div class="me-auto fw-semibold">Danger</div>
-                    <small>Just Now</small>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-                <div class="toast-body">
-                    {{ session('danger') }}
-                </div>
-            </div>
-        @endif
 
-        {{-- Toast Untuk Warning --}}
-        @if (session('warning'))
-            <div class="bs-toast toast toast-placement-ex m-2 bg-warning top-0 end-0 fade show toast-custom" role="alert"
-                aria-live="assertive" aria-atomic="true" id="toastError">
-                <div class="toast-header">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    <div class="me-auto fw-semibold">Warning</div>
-                    <small>Just Now</small>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-                <div class="toast-body">
-                    {{ session('warning') }}
-                </div>
-            </div>
-        @endif
-
-
-        <div class="card mb-4 pb-2">
-            <h5 class="card-header">
-                <a href="{{ route('pegawai.create') }}" class="btn rounded-pill btn-info" data-bs-toggle="tooltip"
-                    data-bs-offset="0,4" data-bs-placement="left" data-bs-html="true" title="Add pegawai"
-                    style="float: right; padding-left: 20px; padding-right: 20px; padding-top: 7px; padding-bottom: 7px">
-                    <i class="bi bi-person-fill-add"></i>
-                    Add pegawai
-                </a>
-                Table pegawai
-            </h5>
-
-            <!-- Table for pegawai Data -->
-            <div class="table-responsive text-nowrap">
-                <table class="table table-hover" id="example">
-                    <thead>
-                        <tr>
-                            <th>No</th>
-                            <th>Nama pegawai</th>
-                            <th>Jabatan</th>
-                            <th>Tanggal Lahir</th>
-                            <th>Email</th>
-                            <th>Status</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="table-border-bottom-0">
-                        @foreach ($pegawai as $data)
-                            <tr>
-                                <td>{{ $loop->index + 1 }}</td>
-                                <td>{{ $data->nama_pegawai }}</td>
-                                <td>{{ $data->jabatan ? $data->jabatan->nama_jabatan : 'Tidak ada jabatan' }}</td>
-                                <td>
-                                    {{ $data->tanggal_lahir ? \Carbon\Carbon::parse($data->tanggal_lahir)->translatedFormat('d F Y') : 'Tidak ada tanggal lahir' }}
-                                </td>
-                                <td>{{ $data->email }}</td>
-                                <td>
-                                    @if ($data->status_pegawai == 1)
-                                        <span class="badge bg-label-info">— Pegawai Aktif —</span>
-                                    @else
-                                        <span class="badge bg-label-dark">— Pegawai Tidak Aktif —</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <form action="{{ route('pegawai.destroy', $data->id) }}" method="POST">
-                                        @csrf
-                                        @method('DELETE')
-                                        <div class="dropdown">
-                                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow"
-                                                data-bs-toggle="dropdown">
-                                                <i class="bx bx-dots-vertical-rounded"></i>
-                                            </button>
-                                            <div class="dropdown-menu">
-                                                <a class="dropdown-item" href="{{ route('pegawai.edit', $data->id) }}"><i
-                                                        class="bx bx-edit-alt me-1"></i> Edit</a>
-                                                <a class="dropdown-item" data-bs-toggle="modal"
-                                                    data-bs-target="#pegawaiDetailModal{{ $data->id }}">
-                                                    <i class="bi bi-eye-fill"></i> Lihat Detail</a>
-                                                <a href="{{ route('pegawai.destroy', $data->id) }}" type="submit"
-                                                    class="dropdown-item" data-confirm-delete="true"><i
-                                                        class="bx bx-trash me-1"></i>
-                                                    Delete</a>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </td>
-                            </tr>
-
-
-                            <!-- Modal Detail Pegawai -->
-                            <div class="modal fade" id="pegawaiDetailModal{{ $data->id }}" tabindex="-1"
-                                aria-labelledby="pegawaiDetailModalLabel{{ $data->id }}" aria-hidden="true"
-                                data-bs-backdrop="static">
-                                <div class="modal-dialog modal-lg modal-dialog-centered">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="pegawaiDetailModalLabel{{ $data->id }}">
-                                                Detail Pegawai -
-                                                {{ $data->nama_pegawai }}</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <p><strong>Nama:</strong> {{ $data->nama_pegawai }} </p>
-                                            <p><strong>Jabatan:</strong>
-                                                {{ $data->jabatan ? $data->jabatan->nama_jabatan : 'Tidak Ada' }}
-                                            </p>
-                                            <p><strong>Tempat Lahir:</strong>
-                                                {{ $data->tempat_lahir ? $data->tempat_lahir : 'Tidak Ada' }} </p>
-                                            <p><strong>Tanggal Lahir:</strong>
-                                                {{ $data->tanggal_lahir ? \Carbon\Carbon::parse($data->tanggal_lahir)->translatedFormat('d F Y') : 'Tidak Ada' }}
-                                            </p>
-                                            <p><strong>Email:</strong> {{ $data->email }} </p>
-                                            <p><strong>Alamat:</strong> {{ $data->alamat ? $data->alamat : 'Tidak Ada' }}
-                                            </p>
-                                            <p><strong>Tanggal Masuk:</strong>
-                                                {{ $data->tanggal_masuk ? \Carbon\Carbon::parse($data->tanggal_masuk)->translatedFormat('d F Y') : 'Tidak Ada' }}
-                                            </p>
-                                            <p><strong>Umur:</strong> {{ $data->umur }} Tahun </p>
-                                            <p><strong>Gaji:</strong> {{ $data->gaji ?? 'Tidak Ada' }} </p>
-
-                                            {{-- <p><strong>Provinsi:</strong>{{ $data->nama_provinsi ?? 'Tidak Ada' }}
-                                            </p>
-                                            <p><strong>Kota/Kabupaten:</strong> {{ $data->nama_kota ?? 'Tidak Ada' }}
-                                            </p>
-                                            <p><strong>Kecamatan:</strong> {{ $data->nama_kecamatan ?? 'Tidak Ada' }} </p>
-                                            <p><strong>Kelurahan:</strong> {{ $data->nama_kelurahan ?? 'Tidak Ada' }} </p> --}}
-
-                                            <p><strong>Ditempatkan
-                                                    di:</strong>{{ $data->nama_provinsi . ', ' . $data->nama_kota . ', ' . $data->nama_kecamatan . ', ' . $data->nama_kelurahan }}
-                                            </p>
-
-                                            <p><strong>Status:</strong>
-                                                @if ($data->status_pegawai == 1)
-                                                    <span class="badge bg-label-info">— Pegawai Aktif —</span>
-                                                @else
-                                                    <span class="badge bg-label-dark">— Pegawai Tidak Aktif —</span>
-                                                @endif
-                                            </p>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary"
-                                                data-bs-dismiss="modal">Close</button>
-                                        </div>
+        <!-- Filter Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">
+                            <i class="bi bi-funnel me-2"></i>Filter Data Karyawan
+                        </h5>
+                        <form method="GET" action="{{ route('pegawai.index') }}">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">
+                                        <i class="bi bi-search me-1"></i>Cari Nama Karyawan
+                                    </label>
+                                    <input type="text" class="form-control" name="search-name" 
+                                           placeholder="Masukkan nama karyawan..." 
+                                           value="{{ request('search-name') }}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">
+                                        <i class="bi bi-building me-1"></i>Filter Lokasi
+                                    </label>
+                                    <select class="form-select" name="search-cabang">
+                                        <option value="">Semua Lokasi</option>
+                                        @foreach (\App\Models\Cabang::all() as $cab)
+                                            <option value="{{ $cab->id }}" {{ request('search-cabang') == $cab->id ? 'selected' : '' }}>
+                                                {{ $cab->nama_cabang }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">
+                                        <i class="bi bi-briefcase me-1"></i>Filter Golongan
+                                    </label>
+                                    <select class="form-select" name="search-golongan">
+                                        <option value="">Semua Golongan</option>
+                                        @foreach (\App\Models\Jabatan::all() as $jab)
+                                            <option value="{{ $jab->id }}" {{ request('search-golongan') == $jab->id ? 'selected' : '' }}>
+                                                {{ $jab->nama_jabatan }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <div class="btn-group w-100" role="group">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-search me-1"></i>Filter
+                                        </button>
+                                        <a href="{{ route('pegawai.index') }}" class="btn btn-outline-secondary">
+                                            <i class="bi bi-arrow-clockwise"></i>
+                                        </a>
                                     </div>
                                 </div>
                             </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">
+                        <i class="bi bi-table me-2"></i>Tabel Data Karyawan
+                    </h5>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tambahKaryawanModal">
+                        <i class="bi bi-plus-circle me-1"></i>Tambah Karyawan
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover" id="dataKaryawan">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-center" style="width: 5%;">No</th>
+                                <th style="width: 20%;">
+                                    <i class="bi bi-person me-1"></i>Nama Karyawan
+                                </th>
+                                <th class="text-center" style="width: 12%;">
+                                    <i class="bi bi-fingerprint me-1"></i>ID Biometric
+                                </th>
+                                <th class="text-center" style="width: 10%;">
+                                    <i class="bi bi-gender-ambiguous me-1"></i>Jenis Kelamin
+                                </th>
+                                <th class="text-center" style="width: 15%;">
+                                    <i class="bi bi-geo-alt me-1"></i>Lokasi
+                                </th>
+                                <th class="text-center" style="width: 12%;">
+                                    <i class="bi bi-briefcase me-1"></i>Golongan
+                                </th>
+                                <th style="width: 18%;">
+                                    <i class="bi bi-envelope me-1"></i>Email
+                                </th>
+                                <th style="width: 8%;">
+                                    <i class="bi bi-house me-1"></i>Alamat
+                                </th>
+                                <th class="text-center" style="width: 12%;">
+                                    <i class="bi bi-currency-dollar me-1"></i>Gaji
+                                </th>
+                                <th class="text-center" style="width: 8%;">
+                                    <i class="bi bi-gear me-1"></i>Aksi
+                                </th>
+                            </tr>
+                        </thead>
+                    <tbody>
+                        @foreach ($pegawai as $index => $data)
+                            <tr>
+                                <td class="text-center">
+                                    <span class="fw-semibold">{{ $index + 1 }}</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-wrapper me-3">
+                                            <div class="avatar avatar-sm">
+                                                <div class="avatar-initial bg-label-primary rounded-circle">
+                                                    {{ strtoupper(substr($data->nama_pegawai, 0, 2)) }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="employee-name">{{ $data->nama_pegawai }}</div>
+                                            <small class="text-muted">ID: {{ $data->id }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    @if($data->device_user_id)
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-fingerprint me-1"></i>{{ $data->device_user_id }}
+                                        </span>
+                                    @else
+                                        <span class="badge bg-secondary">
+                                            <i class="bi bi-x-circle me-1"></i>Belum Terdaftar
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    @if($data->jenis_kelamin == 'Laki-Laki')
+                                        <span class="badge bg-info">
+                                            <i class="bi bi-gender-male me-1"></i>Laki-Laki
+                                        </span>
+                                    @elseif($data->jenis_kelamin == 'Perempuan')
+                                        <span class="badge bg-pink">
+                                            <i class="bi bi-gender-female me-1"></i>Perempuan
+                                        </span>
+                                    @else
+                                        <span class="badge bg-secondary">
+                                            <i class="bi bi-question-circle me-1"></i>Tidak Diketahui
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge badge-custom badge-lokasi">
+                                        <i class="bi bi-geo-alt me-1"></i>
+                                        {{ $data->cabang ? $data->cabang->nama_cabang : 'Tidak ada lokasi' }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge badge-custom badge-golongan">
+                                        <i class="bi bi-briefcase me-1"></i>
+                                        {{ $data->jabatan ? $data->jabatan->nama_jabatan : 'Tidak ada golongan' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-envelope me-2 text-muted"></i>
+                                        <span class="text-truncate" style="max-width: 150px;" title="{{ $data->email }}">
+                                            {{ $data->email }}
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-house me-2 text-muted"></i>
+                                        <span class="text-truncate" style="max-width: 100px;" title="{{ $data->alamat ?? 'Alamat belum diisi' }}">
+                                            {{ $data->alamat ?? 'Belum diisi' }}
+                                        </span>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    @php
+                                        $gajiJabatan = $data->jabatan ? $data->jabatan->gaji_pokok : 0;
+                                        $gajiPegawai = $data->gaji ?? 0;
+                                        $isGajiEdited = $gajiPegawai != $gajiJabatan;
+                                    @endphp
+                                    
+                                    <div class="d-flex flex-column align-items-center">
+                                        <span class="badge badge-custom badge-salary">
+                                            <i class="bi bi-currency-dollar me-1"></i>
+                                            Rp {{ number_format($gajiPegawai, 0, ',', '.') }}
+                                        </span>
+                                        @if($isGajiEdited && $gajiJabatan > 0)
+                                            <small class="text-warning mt-1">
+                                                <i class="bi bi-pencil-square me-1"></i>
+                                                <span style="font-size: 0.7rem;">Diedit Manual</span>
+                                            </small>
+                                            <small class="text-muted" style="font-size: 0.65rem;">
+                                                Standar: Rp {{ number_format($gajiJabatan, 0, ',', '.') }}
+                                            </small>
+                                        @elseif($gajiJabatan > 0)
+                                            <small class="text-success mt-1">
+                                                <i class="bi bi-check-circle me-1"></i>
+                                                <span style="font-size: 0.7rem;">Sesuai Jabatan</span>
+                                            </small>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button type="button" class="btn p-0 dropdown-toggle hide-arrow"
+                                            data-bs-toggle="dropdown">
+                                            <i class="bx bx-dots-vertical-rounded"></i>
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            <a class="dropdown-item" href="{{ route('pegawai.show', $data->id) }}">
+                                                <i class="bx bx-show me-1"></i> Lihat Detail
+                                            </a>
+                                            <a class="dropdown-item" href="{{ route('pegawai.edit', $data->id) }}">
+                                                <i class="bx bx-edit-alt me-1"></i> Edit
+                                            </a>
+                                            <a class="dropdown-item" href="{{ route('pegawai.destroy', $data->id) }}"
+                                                data-confirm-delete="true">
+                                                <i class="bx bx-trash me-1"></i> Delete
+                                            </a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
+</div>
+    </div>
+
+<!-- Modal Tambah Karyawan -->
+<div class="modal fade" id="tambahKaryawanModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-person-plus me-2"></i>Tambah Karyawan Baru</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('pegawai.store') }}" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="bi bi-person-plus fs-3 text-primary"></i>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-dark">
+                                <i class="bi bi-person me-1"></i>Nama Lengkap
+                            </label>
+                            <input type="text" name="nama_pegawai" class="form-control" required placeholder="Masukkan nama lengkap">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-dark">
+                                <i class="bi bi-gender-ambiguous me-1"></i>Jenis Kelamin
+                            </label>
+                            <select name="jenis_kelamin" class="form-select" required>
+                                <option value="" disabled selected>-- Pilih Jenis Kelamin --</option>
+                                <option value="Laki-Laki">Laki-Laki</option>
+                                <option value="Perempuan">Perempuan</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-dark">
+                                <i class="bi bi-building me-1"></i>Lokasi
+                            </label>
+                            <select name="id_cabang" class="form-select" required>
+                                <option value="" disabled selected>-- Pilih Lokasi --</option>
+                                @foreach (\App\Models\Cabang::all() as $cabang)
+                                    <option value="{{ $cabang->id }}">{{ $cabang->nama_cabang }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-dark">
+                                <i class="bi bi-briefcase me-1"></i>Golongan
+                            </label>
+                            <select name="id_jabatan" class="form-select" required>
+                                <option value="" disabled selected>-- Pilih Golongan --</option>
+                                @foreach (\App\Models\Jabatan::all() as $jabatan)
+                                    <option value="{{ $jabatan->id }}">{{ $jabatan->nama_jabatan }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">
+                            <i class="bi bi-envelope me-1"></i>Email
+                        </label>
+                        <input type="email" name="email" class="form-control" required placeholder="Masukkan alamat email">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">
+                            <i class="bi bi-geo-alt me-1"></i>Alamat
+                        </label>
+                        <textarea name="alamat" class="form-control" rows="3" required placeholder="Masukkan alamat lengkap"></textarea>
+                    </div>
+
+                    <div class="alert alert-info border-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Info:</strong> Pastikan semua data yang dimasukkan sudah benar sebelum menyimpan.
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i>Batal
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-1"></i>Simpan Karyawan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
+
 @push('scripts')
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
     <script src="https://cdn.datatables.net/2.1.8/js/dataTables.bootstrap5.js"></script>
 
     <script>
-        new DataTable('#example')
+        $(document).ready(function() {
+            // Initialize DataTable
+            $('#dataKaryawan').DataTable({
+                "paging": true,
+                "lengthChange": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "autoWidth": false,
+                "responsive": true,
+                "pageLength": 10,
+                "language": {
+                    "search": "Cari:",
+                    "lengthMenu": "Tampilkan _MENU_ data per halaman",
+                    "info": "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                    "infoEmpty": "Menampilkan 0 sampai 0 dari 0 data",
+                    "infoFiltered": "(difilter dari _MAX_ total data)",
+                    "paginate": {
+                        "first": "Pertama",
+                        "last": "Terakhir",
+                        "next": "Selanjutnya",
+                        "previous": "Sebelumnya"
+                    }
+                }
+            });
+
+            // Auto-submit form when filters change
+            $('select[name="search-cabang"], select[name="search-golongan"]').on('change', function() {
+                $(this).closest('form').submit();
+            });
+
+            // Auto-hide toasts after 5 seconds
+            setTimeout(function() {
+                $('.toast').fadeOut();
+            }, 5000);
+        });
     </script>
 @endpush

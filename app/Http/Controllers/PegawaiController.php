@@ -9,50 +9,34 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Response;
 
 class PegawaiController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $responseProvinsi = Http::get('https://emsifa.github.io/api-wilayah-indonesia/api/provinces.json');
-        $provinsis = $responseProvinsi->json(); // Mengubah response menjadi array
-
-        $pegawai = User::where('is_admin', 0)->get()->map(function ($pegawai) use ($provinsis) {
-            $pegawai->umur = floor(Carbon::parse($pegawai->tanggal_lahir)->diffInYears(Carbon::now()));
-
-            // Mencari nama provinsi berdasarkan ID provinsi
-            $provinsi = collect($provinsis)->firstWhere('id', (string) $pegawai->provinsi);
-            $pegawai->nama_provinsi = $provinsi ? $provinsi['name'] : 'Provinsi tidak ditemukan';
-
-            // Mengambil data kota berdasarkan ID provinsi
-            $responseKota = Http::get("https://www.emsifa.com/api-wilayah-indonesia/api/regencies/{$pegawai->provinsi}.json");
-            $kotas = $responseKota->json(); // Mengubah response menjadi array
-
-            // Mencari nama kota berdasarkan ID kota pegawai
-            $kota = collect($kotas)->firstWhere('id', (string) $pegawai->kabupaten);
-            $pegawai->nama_kota = $kota ? $kota['name'] : 'Kota tidak ditemukan';
-
-            // Mengambil data kecamatan berdasarkan ID kabupaten
-            $responseKecamatan = Http::get("https://www.emsifa.com/api-wilayah-indonesia/api/districts/{$pegawai->kabupaten}.json");
-            $kecamatans = $responseKecamatan->json(); // Mengubah response menjadi array
-
-            // Mencari nama kecamatan berdasarkan ID kecamatan pegawai
-            $kecamatan = collect($kecamatans)->firstWhere('id', (string) $pegawai->kecamatan);
-            $pegawai->nama_kecamatan = $kecamatan ? $kecamatan['name'] : 'Kecamatan tidak ditemukan';
-
-            // Mengambil data kecamatan berdasarkan ID kabupaten
-            $responseKelurahan = Http::get("https://www.emsifa.com/api-wilayah-indonesia/api/villages/{$pegawai->kecamatan}.json");
-            $kelurahans = $responseKelurahan->json(); // Mengubah response menjadi array
-
-            // Mencari nama kecamatan berdasarkan ID kecamatan pegawai
-            $kelurahan = collect($kelurahans)->firstWhere('id', (string) $pegawai->kelurahan);
-            $pegawai->nama_kelurahan = $kelurahan ? $kelurahan['name'] : 'Kelurahan tidak ditemukan';
-
-            return $pegawai;
-        });
+        // Filter berdasarkan cabang, golongan, dan nama
+        $query = User::with(['cabang', 'jabatan'])->where('role', '!=', 'manager');
+        
+        // Filter berdasarkan cabang jika ada
+        if ($request->has('search-cabang') && $request->input('search-cabang') != '') {
+            $query->where('id_cabang', $request->input('search-cabang'));
+        }
+        
+        // Filter berdasarkan golongan/jabatan jika ada
+        if ($request->has('search-golongan') && $request->input('search-golongan') != '') {
+            $query->where('id_jabatan', $request->input('search-golongan'));
+        }
+        
+        // Filter berdasarkan nama jika ada
+        if ($request->has('search-name') && $request->input('search-name') != '') {
+            $query->where('nama_pegawai', 'like', '%' . $request->input('search-name') . '%');
+        }
+        
+        $pegawai = $query->get();
 
         $jabatan = Jabatan::all();
         confirmDelete('Hapus Pegawai!', 'Apakah Anda Yakin?');
@@ -62,7 +46,7 @@ class PegawaiController extends Controller
 
     public function indexAdmin()
     {
-        $pegawai = User::where('is_admin', 1)->get();
+        $pegawai = User::where('role', 'manager')->get();
         return view('admin.pegawai.index', compact('pegawai'));
     }
 
@@ -73,7 +57,8 @@ class PegawaiController extends Controller
     {
         $pegawai = User::all();
         $jabatan = Jabatan::all();
-        return view('admin.pegawai.create', compact('pegawai', 'jabatan'));
+        $cabang = \App\Models\Cabang::all();
+        return view('admin.pegawai.create', compact('pegawai', 'jabatan', 'cabang'));
     }
 
     /**
@@ -81,52 +66,52 @@ class PegawaiController extends Controller
      */
     public function store(Request $request)
     {
-        // $request->validate([
-        //     'nama_pegawai' => 'required|unique:pegawais,nama_pegawai',
-        //     'tanggal_lahir' => 'required',
-        //     'jenis_kelamin' => 'required',
-        //     'alamat' => 'required',
-        //     'email' => 'required',
-        //     'tanggal_masuk' => 'required',
-        //     'status' => 'nullable',
-        //     'id_jabatan' => 'required',
-        //     'provinsi' => 'required',
-        //     'kota' => 'required',
-        //     'kabupaten' => 'required',
-        //     'kecamatan' => 'required',
-        //     'kelurahan' => 'required',
-        // ], [
-        //     'nama_pegawai.unique' => 'Nama jabatan sudah ada!',
-        //     'tanggal_lahir.required' => 'Tanggal Lahir Harus Diisi!',
-        //     'jenis_kelamin.required' => 'Tanggal Lahir Harus Diisi!',
-        //     'alamat.required' => 'Tanggal Lahir Harus Diisi!',
-        //     'email.required' => 'Tanggal Lahir Harus Diisi!',
-        //     'tanggal_masuk.required' => 'Tanggal Lahir Harus Diisi!',
-        //     'umur.required' => 'Tanggal Lahir Harus Diisi!',
-        //     'id_jabatan.required' => 'Jabatan Harus Diisi!',
-        // ]
-        // );
+        $request->validate([
+            'nama_pegawai' => 'required|string|max:255',
+            'jenis_kelamin' => 'required|string|in:Laki-Laki,Perempuan',
+            'id_cabang' => 'required|exists:cabang,id',
+            'id_jabatan' => 'required|exists:jabatans,id',
+            'email' => 'required|email|unique:users,email|max:255',
+            'alamat' => 'required|string|max:500',
+            'device_user_id' => 'nullable|string|unique:users,device_user_id|max:50',
+        ], [
+            'nama_pegawai.required' => 'Nama pegawai harus diisi!',
+            'nama_pegawai.max' => 'Nama pegawai maksimal 255 karakter!',
+            'jenis_kelamin.required' => 'Jenis kelamin harus dipilih!',
+            'jenis_kelamin.in' => 'Jenis kelamin harus Laki-Laki atau Perempuan!',
+            'id_cabang.required' => 'Lokasi harus dipilih!',
+            'id_cabang.exists' => 'Lokasi yang dipilih tidak valid!',
+            'id_jabatan.required' => 'Golongan harus dipilih!',
+            'id_jabatan.exists' => 'Golongan yang dipilih tidak valid!',
+            'email.required' => 'Email harus diisi!',
+            'email.email' => 'Format email tidak valid!',
+            'email.unique' => 'Email sudah digunakan!',
+            'email.max' => 'Email maksimal 255 karakter!',
+            'alamat.required' => 'Alamat harus diisi!',
+            'alamat.max' => 'Alamat maksimal 500 karakter!',
+            'device_user_id.unique' => 'ID Device Fingerprint sudah digunakan!',
+            'device_user_id.max' => 'ID Device Fingerprint maksimal 50 karakter!',
+        ]);
+
+        // Get gaji pokok from jabatan
+        $jabatan = Jabatan::find($request->id_jabatan);
+        $gajiOtomatis = $jabatan ? $jabatan->gaji_pokok : 0;
 
         $pegawai = new User();
         $pegawai->nama_pegawai = $request->nama_pegawai;
-        $pegawai->tempat_lahir = $request->tempat_lahir;
-        $pegawai->tanggal_lahir = $request->tanggal_lahir;
         $pegawai->jenis_kelamin = $request->jenis_kelamin;
         $pegawai->alamat = $request->alamat;
         $pegawai->email = $request->email;
-        $pegawai->password = Hash::make($request->password);
-        $pegawai->tanggal_masuk = $request->tanggal_masuk;
-        $pegawai->gaji = $request->gaji;
-        $pegawai->status_pegawai = $request->status_pegawai;
+        $pegawai->password = Hash::make('password123'); // Default password
         $pegawai->id_jabatan = $request->id_jabatan;
-
-        $pegawai->provinsi = $request->provinsi;
-        $pegawai->kabupaten = $request->kabupaten;
-        $pegawai->kecamatan = $request->kecamatan;
-        $pegawai->kelurahan = $request->kelurahan;
+        $pegawai->id_cabang = $request->id_cabang;
+        $pegawai->device_user_id = $request->device_user_id;
+        $pegawai->gaji = $gajiOtomatis; // Set gaji sesuai jabatan
+        $pegawai->role = 'admin'; // Set as admin (previously employee)
+        $pegawai->status_pegawai = 1; // Set as active
 
         $pegawai->save();
-        return redirect()->route('pegawai.index')->with('success', 'pegawai berhasil ditambahkan!');
+        return redirect()->route('pegawai.index')->with('success', 'Pegawai berhasil ditambahkan!');
 
     }
 
@@ -135,7 +120,8 @@ class PegawaiController extends Controller
      */
     public function show($id)
     {
-        //
+        $pegawai = User::with(['cabang', 'jabatan'])->findOrFail($id);
+        return view('admin.pegawai.show', compact('pegawai'));
     }
 
     /**
@@ -145,7 +131,22 @@ class PegawaiController extends Controller
     {
         $pegawai = User::findOrFail($id);
         $jabatan = Jabatan::all();
-        return view('admin.pegawai.edit', compact('pegawai', 'jabatan'));
+        $cabang = \App\Models\Cabang::all();
+        
+        // Debug: Log data pegawai
+        \Log::info('Data Pegawai untuk Edit:', [
+            'id' => $pegawai->id,
+            'nama_pegawai' => $pegawai->nama_pegawai,
+            'email' => $pegawai->email,
+            'jenis_kelamin' => $pegawai->jenis_kelamin,
+            'alamat' => $pegawai->alamat,
+            'gaji' => $pegawai->gaji,
+            'id_jabatan' => $pegawai->id_jabatan,
+            'id_cabang' => $pegawai->id_cabang,
+            'device_user_id' => $pegawai->device_user_id
+        ]);
+        
+        return view('admin.pegawai.edit', compact('pegawai', 'jabatan', 'cabang'));
     }
 
     /**
@@ -153,33 +154,56 @@ class PegawaiController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // Validate the request data
         $request->validate([
             'nama_pegawai' => 'required|string|max:255',
-            'tempat_lahir' => 'required|string|max:255',
-            'tanggal_lahir' => 'required|date',
-            'jenis_kelamin' => 'required|string',
-            'alamat' => 'required|string',
-            'email' => 'required|email|max:255',
-            'tanggal_masuk' => 'required|date',
-            'gaji' => 'required|numeric',
-            'status_pegawai' => 'required|boolean',
             'id_jabatan' => 'required|exists:jabatans,id',
+            'id_cabang' => 'required|exists:cabang,id',
+            'jenis_kelamin' => 'required|in:Laki-Laki,Perempuan',
+            'alamat' => 'required|string|max:500',
+            'email' => 'required|email|max:255|unique:users,email,' . $id,
+            'device_user_id' => 'nullable|string|max:50',
+            'gaji' => 'nullable|numeric|min:0',
+        ], [
+            'nama_pegawai.required' => 'Nama pegawai wajib diisi.',
+            'nama_pegawai.max' => 'Nama pegawai maksimal 255 karakter.',
+            'id_jabatan.required' => 'Golongan wajib dipilih.',
+            'id_jabatan.exists' => 'Golongan yang dipilih tidak valid.',
+            'id_cabang.required' => 'Lokasi wajib dipilih.',
+            'id_cabang.exists' => 'Lokasi yang dipilih tidak valid.',
+            'jenis_kelamin.required' => 'Jenis kelamin wajib dipilih.',
+            'jenis_kelamin.in' => 'Jenis kelamin harus Laki-Laki atau Perempuan.',
+            'alamat.required' => 'Alamat wajib diisi.',
+            'alamat.max' => 'Alamat maksimal 500 karakter.',
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.max' => 'Email maksimal 255 karakter.',
+            'email.unique' => 'Email sudah digunakan oleh pegawai lain.',
+            'device_user_id.max' => 'ID Device Fingerprint maksimal 50 karakter.',
+            'gaji.numeric' => 'Gaji harus berupa angka.',
+            'gaji.min' => 'Gaji tidak boleh kurang dari 0.',
         ]);
-    
-        // Select only the fields you want to update, excluding 'umur'
-        $data = $request->only([
-            'nama_pegawai', 'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin', 
-            'alamat', 'email', 'tanggal_masuk', 'gaji', 'status_pegawai', 'id_jabatan',
-            'provinsi', 'kabupaten', 'kecamatan', 'kelurahan'
-        ]);
-    
-        // Find the Pegawai record and update it
+
         $pegawai = User::findOrFail($id);
-        $pegawai->update($data);
-    
-        // Redirect back with a success message
-        return redirect()->route('pegawai.index')->with('success', 'Pegawai berhasil diubah!');
+        
+        // Jika gaji tidak diisi atau kosong, gunakan gaji pokok dari jabatan
+        $gaji = $request->gaji;
+        if (empty($gaji)) {
+            $jabatan = Jabatan::find($request->id_jabatan);
+            $gaji = $jabatan ? $jabatan->gaji_pokok : 0;
+        }
+        
+        $pegawai->update([
+            'nama_pegawai' => $request->nama_pegawai,
+            'id_jabatan' => $request->id_jabatan,
+            'id_cabang' => $request->id_cabang,
+            'jenis_kelamin' => $request->jenis_kelamin,
+            'alamat' => $request->alamat,
+            'email' => $request->email,
+            'device_user_id' => $request->device_user_id,
+            'gaji' => $gaji
+        ]);
+
+        return redirect()->route('pegawai.index')->with('success', 'Data pegawai berhasil diperbarui.');
     }
     
 
@@ -201,5 +225,87 @@ class PegawaiController extends Controller
 
         return redirect()->route('pegawai.index')->with('danger', 'Anda tidak bisa menghapus diri sendiri!');
 
+    }
+    
+    public function export(Request $request)
+    {
+        // Get filter parameters
+        $selectedMonth = $request->input('search-month', date('m'));
+        $selectedYear = $request->input('search-year', date('Y'));
+        $searchName = $request->input('search-name');
+        $searchBranch = $request->input('search-branch');
+        
+        // Build query with filters
+        $query = User::with(['cabang', 'jabatan'])->where('role', '!=', 'manager');
+        
+        if ($searchName) {
+            $query->where('nama_pegawai', 'like', '%' . $searchName . '%');
+        }
+        
+        if ($searchBranch) {
+            $query->where('id_cabang', $searchBranch);
+        }
+        
+        $pegawai = $query->get();
+        
+        // Calculate days in month
+        $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $selectedMonth, $selectedYear);
+        $monthName = date('F', mktime(0, 0, 0, $selectedMonth, 1, $selectedYear));
+        
+        // Create CSV content
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="absensi-' . $monthName . '-' . $selectedYear . '.csv"',
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0'
+        ];
+        
+        $callback = function() use ($pegawai, $daysInMonth, $selectedMonth, $selectedYear) {
+            $file = fopen('php://output', 'w');
+            
+            // Header row 1 - Month and Year
+            $headerRow1 = ['Nama Karyawan'];
+            $monthName = date('F', mktime(0, 0, 0, $selectedMonth, 1, $selectedYear));
+            for ($day = 1; $day <= $daysInMonth; $day++) {
+                $headerRow1[] = $day;
+                $headerRow1[] = ''; // Empty cell for evening check-in
+            }
+            fputcsv($file, $headerRow1);
+            
+            // Header row 2 - Morning/Evening indicators
+            $headerRow2 = [''];
+            for ($day = 1; $day <= $daysInMonth; $day++) {
+                $headerRow2[] = 'Pagi';
+                $headerRow2[] = 'Sore';
+            }
+            fputcsv($file, $headerRow2);
+            
+            // Data rows
+            foreach ($pegawai as $data) {
+                $row = [$data->nama_pegawai];
+                
+                for ($day = 1; $day <= $daysInMonth; $day++) {
+                    $date = "$selectedYear-$selectedMonth-" . str_pad($day, 2, '0', STR_PAD_LEFT);
+                    $absensi = \App\Models\Absensi::where('id_user', $data->id)
+                        ->where('tanggal_absen', $date)
+                        ->first();
+                    
+                    if ($absensi) {
+                        $row[] = $absensi->jam_masuk ? Carbon::parse($absensi->jam_masuk)->format('H:i') : '-';
+                        $row[] = $absensi->jam_masuk_sore ? Carbon::parse($absensi->jam_masuk_sore)->format('H:i') : '-';
+                    } else {
+                        $row[] = '-';
+                        $row[] = '-';
+                    }
+                }
+                
+                fputcsv($file, $row);
+            }
+            
+            fclose($file);
+        };
+        
+        return Response::stream($callback, 200, $headers);
     }
 }

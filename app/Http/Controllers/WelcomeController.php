@@ -15,17 +15,23 @@ class WelcomeController extends Controller
      */
     public function index()
     {
-        $absensi = Absensi::where('id_user', Auth::id())
-            ->whereDate('tanggal_absen', Carbon::today())
-            ->orderBy('jam_masuk', 'desc')
-            ->get();
-        $izinSakit = Absensi::where('status', 'sakit')->get();
-        $izinSakitCount = $izinSakit->count();
-
-        $pegawai = User::all();
-
-        return view('user.absensi.index', compact('absensi', 'pegawai', 'izinSakit', 'izinSakitCount'));
-
+        $user = Auth::user();
+        $today = now()->format('Y-m-d');
+        
+        // Get attendance data for users in the same branch as current user
+        $absensi = Absensi::whereHas('user', function($query) use ($user) {
+                                $query->where('id_cabang', $user->id_cabang);
+                            })
+                            ->with('user')
+                            ->orderBy('tanggal_absen', 'desc')
+                            ->get();
+        
+        // Check if user has checked in today
+        $todayAttendance = Absensi::where('id_user', $user->id)
+                                  ->where('tanggal_absen', $today)
+                                  ->first();
+        
+        return view('welcome', compact('absensi', 'todayAttendance'));
     }
 
     /**
@@ -40,9 +46,21 @@ class WelcomeController extends Controller
     // }
     public function create()
     {
-        $absensi = Absensi::where('id_user', Auth::id())->get();
-        $pegawai = User::all();
-        return view('user.absensi.index', compact('pegawai', 'absensi')); //update
+        $user = Auth::user();
+        
+        // Get attendance data for users in the same branch
+        $absensi = Absensi::whereHas('user', function($query) use ($user) {
+                        $query->where('id_cabang', $user->id_cabang);
+                    })
+                    ->with('user')
+                    ->orderBy('tanggal_absen', 'desc')
+                    ->get();
+        
+        // Get employees in the same branch
+        $pegawai = User::where('id_cabang', $user->id_cabang)->get();
+        
+        // Redirect to calendar view since absensi index is removed
+        return redirect()->route('welcome.calendar');
     }
 
     /**
@@ -175,6 +193,85 @@ class WelcomeController extends Controller
 
     //     return redirect()->route('welcome.index')->with('error', 'Absen Pulang gagal disimpan atau sudah dilakukan.');
     // }
+    /**
+     * Show calendar view for user attendance
+     */
+    public function calendar()
+    {
+        return view('user.absensi.calendar');
+    }
+
+    /**
+     * Get attendance data for calendar view
+     */
+    public function getCalendarData(Request $request)
+    {
+        $user = Auth::user();
+        $month = $request->month ?? date('n');
+        $year = $request->year ?? date('Y');
+        
+        // Calculate date range for the month
+        $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
+        $endDate = Carbon::createFromDate($year, $month, 1)->endOfMonth();
+        
+        // Get attendance data for the user in the specified month
+        $attendanceData = Absensi::where('id_user', $user->id)
+            ->whereBetween('tanggal_absen', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+            ->get()
+            ->keyBy('tanggal_absen');
+        
+        // Get all employees in the same branch for display
+        $employees = User::where('id_cabang', $user->id_cabang)
+            ->where('role', '!=', 'manager')
+            ->orderBy('nama_pegawai', 'asc')
+            ->get();
+        
+        $result = [];
+        
+        foreach ($employees as $employee) {
+            $employeeAttendance = [];
+            
+            // Get attendance data for this employee
+            $employeeData = Absensi::where('id_user', $employee->id)
+                ->whereBetween('tanggal_absen', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+                ->get()
+                ->keyBy('tanggal_absen');
+            
+            // Build attendance array for each day of the month
+            for ($day = 1; $day <= $endDate->day; $day++) {
+                $date = Carbon::createFromDate($year, $month, $day);
+                $dateString = $date->format('Y-m-d');
+                
+                $attendance = $employeeData->get($dateString);
+                
+                // Check if it's weekend
+                $isWeekend = $date->isWeekend();
+                
+                $employeeAttendance[$day] = [
+                    'date' => $dateString,
+                    'jam_masuk' => $attendance ? $attendance->jam_masuk : null,
+                    'jam_masuk_sore' => $attendance ? $attendance->jam_masuk_sore : null,
+                    'jam_keluar' => $attendance ? $attendance->jam_keluar : null,
+                    'note' => $attendance ? $attendance->note : null,
+                    'status' => $attendance ? $attendance->status : null,
+                    'is_weekend' => $isWeekend,
+                    'is_holiday' => false, // You can add holiday logic here
+                    'source' => $attendance ? ($attendance->source ?? 'Manual') : null
+                ];
+            }
+            
+            $result[] = [
+                'id' => $employee->id,
+                'nama' => $employee->nama_pegawai,
+                'golongan' => $employee->jabatan ? $employee->jabatan->nama_jabatan : '-',
+                'cabang' => $employee->cabang ? $employee->cabang->nama_cabang : '-',
+                'attendance' => $employeeAttendance
+            ];
+        }
+        
+        return response()->json($result);
+    }
+
     public function update(Request $request, $id)
     {
         date_default_timezone_set('Asia/Jakarta'); // Set time zone

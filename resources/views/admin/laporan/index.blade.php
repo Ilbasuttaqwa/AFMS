@@ -1,7 +1,7 @@
 @extends('layouts.admin.template')
 @section('content')
     <div class="container-xxl flex-grow-1 container-p-y">
-        <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Employee /</span> Absensi</h4>
+        <h4 class="fw-bold py-3 mb-4">Absensi</h4>
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-md-12">
@@ -49,7 +49,7 @@
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Add cuti</h5>
+                    <h5 class="modal-title">Filter Laporan</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">

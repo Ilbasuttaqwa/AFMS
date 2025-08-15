@@ -1,4 +1,7 @@
 {
+    "name": "hrms-pro",
+    "version": "1.0.0",
+    "description": "HRMS Pro - Human Resource Management System",
     "private": true,
     "type": "module",
     "scripts": {

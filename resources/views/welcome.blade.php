@@ -194,7 +194,7 @@
                     @foreach ($absensi as $data)
                         <tr class="text-center">
                             <td>{{ $loop->index + 1 }}</td>
-                            <td>{{ $data->pegawai->nama_pegawai }}</td>
+                            <td>{{ $data->user->nama_pegawai }}</td>
                             <td>{{ \Carbon\Carbon::parse($data->tanggal_absen)->translatedFormat('d F Y') }}</td>
                             <td>{{ $data->jam_masuk }}</td>
                             <td>

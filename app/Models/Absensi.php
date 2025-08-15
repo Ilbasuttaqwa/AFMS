@@ -9,8 +9,18 @@ class Absensi extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['id', 'id_user', 'tanggal_absen', 'jam_masuk', 'jam_keluar', 'status' , 'note', 'photo'];
-    public $timestamp = true;
+    protected $fillable = [
+        'id',
+        'id_user',
+        'tanggal_absen',
+        'jam_masuk',
+        'jam_istirahat',
+        'jam_masuk_sore',
+        'jam_keluar',
+        'status',
+        'note',
+        'photo'
+    ];
 
     public function user()
     {

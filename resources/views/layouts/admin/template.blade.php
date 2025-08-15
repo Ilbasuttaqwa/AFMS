@@ -7,7 +7,7 @@
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
-    <title>GrowTalenta</title>
+    <title>AFMS</title>
 
     <meta name="description" content="" />
 
@@ -120,6 +120,8 @@
     @include('sweetalert::alert')
 
     @stack('scripts')
+
+    @yield('js')
 
     {{-- UNTUk TOAST 2 DETIK --}}
     <script>

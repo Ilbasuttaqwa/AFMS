@@ -13,14 +13,30 @@ class AdminSeeder extends Seeder
      */
     public function run(): void
     {
+        // Create Admin user
         User::create([
-            'nama_pegawai' => 'Admin',
+            'nama_pegawai' => 'Administrator',
             'google_id' => null,
             'email' => 'admin@gmail.com',
-            // 'password' => Hash::make('12345678'),
             'password' => Hash::make('password'),
+            'role' => 'admin',
             'is_admin' => 1,
             'status_pegawai' => 1,
+            'id_jabatan' => 1,
+            'id_cabang' => 1,
+        ]);
+
+        // Create Manager user
+        User::create([
+            'nama_pegawai' => 'Manager',
+            'google_id' => null,
+            'email' => 'manager@gmail.com',
+            'password' => Hash::make('password'),
+            'role' => 'manager',
+            'is_admin' => 1,
+            'status_pegawai' => 1,
+            'id_jabatan' => 1,
+            'id_cabang' => 1,
         ]);
     }
 }
