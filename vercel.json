@@ -10,7 +10,9 @@
     }
   ],
   "env": {
+    "APP_NAME": "AFMS",
     "APP_ENV": "production",
+    "APP_KEY": "base64:GENERATE_NEW_KEY_FOR_PRODUCTION",
     "APP_DEBUG": "false",
     "APP_URL": "https://your-app.vercel.app",
     "APP_CONFIG_CACHE": "/tmp/config.php",

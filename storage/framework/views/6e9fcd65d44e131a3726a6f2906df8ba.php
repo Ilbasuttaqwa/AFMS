@@ -201,7 +201,7 @@
             <div class="form-content">
                 <form method="POST" action="<?php echo e(route('login')); ?>">
                     <?php echo csrf_field(); ?>
-                    <div class="app-title">AFMS</div>
+
                     <header>Login</header>
                     <div class="field input-field">
                         <input id="email" type="email" class="form-control <?php $__errorArgs = ['email'];
